@@ -1,0 +1,92 @@
+# West Nile Virus Genome Classification Configuration
+# Publication-ready analysis configuration
+
+project:
+  name: "WNV_HyenaDNA_Classification"
+  version: "1.0.0"
+  description: "Publication-quality West Nile Virus genome classification using HyenaDNA"
+  author: "Research Team"
+  date: "2025-08-31"
+
+data:
+  raw_fasta: "data/raw/west_nile_genomes.fasta"
+  processed_dir: "data/processed/"
+  external_dir: "data/external/"
+  
+sequence:
+  max_length: 15000  # WNV genomes are ~11kb, pad to 15kb for safety
+  min_length: 8000   # Filter out incomplete sequences
+  min_quality: 0.95  # Minimum sequence quality (non-N content)
+
+features:
+  traditional:
+    nucleotide_composition: true
+    kmer_size: [3, 4]  # Extract 3-mer, 4-mer frequencies (reduced for testing)
+    physicochemical: true
+    codon_usage: false  # Disable for initial testing
+    
+  deep_learning:
+    model_name: "hyenadna-medium-450k-seqlen"
+    embedding_dim: 256
+    batch_size: 16
+    max_seq_length: 15000
+    use_gpu: true
+
+classification:
+  target_column: "country"  # or "lineage", "year", "continent"
+  test_size: 0.2
+  validation_size: 0.2
+  stratify: true
+  random_state: 42
+  
+  models:
+    - "RandomForest"
+    - "GradientBoosting"
+    - "SVM"
+    - "LogisticRegression"
+    - "XGBoost"
+    
+  hyperparameter_tuning:
+    method: "RandomizedSearchCV"
+    n_iter: 100
+    cv_folds: 5
+    scoring: "f1_macro"
+
+visualization:
+  figures_dir: "results/figures/"
+  dpi: 300
+  format: ["png", "pdf", "svg"]
+  style: "publication"
+  color_palette: "viridis"
+  
+  plots:
+    - "sequence_length_distribution"
+    - "gc_content_distribution" 
+    - "geographical_distribution"
+    - "temporal_distribution"
+    - "phylogenetic_tree"
+    - "feature_importance"
+    - "confusion_matrix"
+    - "roc_curves"
+    - "dimensionality_reduction"
+
+results:
+  models_dir: "results/models/"
+  tables_dir: "results/tables/"
+  reports_dir: "results/reports/"
+  
+reproducibility:
+  random_seed: 42
+  log_level: "INFO"
+  save_intermediate: true
+  track_experiments: true
+  
+performance:
+  n_jobs: -1  # Use all available cores
+  memory_limit: "8GB"
+  cache_dir: "cache/"
+  
+quality_control:
+  remove_duplicates: true
+  min_sequences_per_class: 10
+  max_class_imbalance: 10.0  # Maximum ratio between largest and smallest class
